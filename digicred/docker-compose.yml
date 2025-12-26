@@ -376,10 +376,10 @@ services:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -q"]
-      interval: 10s     
+      interval: 10s
       timeout: 5s
-      retries: 5             
-      start_period: 30s   
+      retries: 5
+      start_period: 30s
     networks: [default]
 
   redis:
@@ -515,7 +515,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: -config.file=/etc/promtail/config.yml
     environment:
-      - TZ=UTC 
+      - TZ=UTC
     depends_on:
       - loki
     networks: [default]
