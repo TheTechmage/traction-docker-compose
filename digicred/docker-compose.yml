@@ -58,12 +58,21 @@ services:
   ##    ##    ##     ## ##     ##  ######     ##    ####  #######  ##    ##
   traction-acapy-image-builder:
     image: ghcr.io/digicred-holdings/traction-plugins-acapy-v1.0.1:latest
+    build:
+      context: traction/plugins
+      dockerfile: docker/Dockerfile
+      tags:
+      - ghcr.io/digicred-holdings/traction-plugins-acapy-v1.0.1:latest
+      - traction:plugins-acapy
     entrypoint: "/bin/bash"
     tty: true
     networks: [default]
 
   traction-agent:
     image: ghcr.io/digicred-holdings/traction-agent-v1.0.1:latest
+    build:
+      context: traction/services/aca-py
+      dockerfile: Dockerfile.acapy
     depends_on:
       traction-db:
         condition: service_healthy
@@ -158,6 +167,9 @@ services:
 
   tenant-ui:
     image: ghcr.io/digicred-holdings/traction-tenant-ui-v1.0.1:latest
+    build:
+      context: traction/services/tenant-ui
+      dockerfile: Dockerfile
     depends_on:
       tenant-proxy:
         condition: service_started
@@ -195,6 +207,9 @@ services:
 
   tenant-queue-processor:
     image: ghcr.io/digicred-holdings/traction-tenant-ui-v1.0.1:latest
+    build:
+      context: traction/services/tenant-ui
+      dockerfile: Dockerfile
     depends_on:
       tenant-ui:
         condition: service_started
@@ -232,6 +247,9 @@ services:
 
   tenant-proxy:
     image: ghcr.io/digicred-holdings/traction-tenant-proxy-v1.0.1:latest
+    build:
+      context: traction/plugins
+      dockerfile: docker/Dockerfile.tenant-proxy
     depends_on:
       traction-agent:
         condition: service_started
