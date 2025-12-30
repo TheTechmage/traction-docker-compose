@@ -21,6 +21,8 @@ services:
     depends_on:
       gateway:
         condition: service_started
+    profiles:
+      - dev
   zrok-agent:
     image: openziti/zrok
     restart: unless-stopped
@@ -35,6 +37,8 @@ services:
     depends_on:
       traction-agent:
         condition: service_started
+    profiles:
+      - dev
   gateway:
     image: nginx
     volumes:
@@ -48,6 +52,8 @@ services:
         condition: service_started
       tenant-ui:
         condition: service_healthy
+    profiles:
+      - dev
 
   ## ######## ########     ###     ######  ######## ####  #######  ##    ##
   ##    ##    ##     ##   ## ##   ##    ##    ##     ##  ##     ## ###   ##
@@ -67,6 +73,9 @@ services:
     entrypoint: "/bin/bash"
     tty: true
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   traction-agent:
     image: ghcr.io/digicred-holdings/traction-agent-v1.0.1:latest
@@ -146,6 +155,9 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    profiles:
+      - dev
+      - production
 
   traction-db:
     image: postgres:15
@@ -164,6 +176,9 @@ services:
       retries: 5
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   tenant-ui:
     image: ghcr.io/digicred-holdings/traction-tenant-ui-v1.0.1:latest
@@ -204,6 +219,9 @@ services:
       - "${TENANT_UI_PORT}:8080"
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   tenant-queue-processor:
     image: ghcr.io/digicred-holdings/traction-tenant-ui-v1.0.1:latest
@@ -244,6 +262,9 @@ services:
     command: ["node", "dist/src/queue-processor.js"]
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   tenant-proxy:
     image: ghcr.io/digicred-holdings/traction-tenant-proxy-v1.0.1:latest
@@ -261,6 +282,9 @@ services:
       - "${TENANT_PROXY_PORT}:8080"
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   ## ######## ##    ## ########   #######  ########   ######  ######## ########   ######
   ## ##       ###   ## ##     ## ##     ## ##     ## ##    ## ##       ##     ## ##    ##
@@ -311,6 +335,9 @@ services:
       - ./ledgers.yml:/home/aries/ledgers.yml
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   endorser-agent-1:
     image: ghcr.io/openwallet-foundation/acapy-agent:py3.12-1.2.2
@@ -352,6 +379,9 @@ services:
       - ./endorser-acapy-args.yml:/home/aries/endorser-acapy-args.yml
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   endorser-db:
     image: postgres:15
@@ -370,6 +400,9 @@ services:
       retries: 5
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   ## ########     ###    ########    ###    ########     ###     ######  ########
   ## ##     ##   ## ##      ##      ## ##   ##     ##   ## ##   ##    ## ##
@@ -399,6 +432,9 @@ services:
       retries: 5
       start_period: 30s
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   redis:
     image: "redis:alpine"
@@ -415,6 +451,9 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     networks: [default]
+    profiles:
+      - dev
+      - production
 
   ##  ######   #######  ##    ## ######## ########   #######  ##       ##       ######## ########
   ## ##    ## ##     ## ###   ##    ##    ##     ## ##     ## ##       ##       ##       ##     ##
@@ -452,6 +491,9 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    profiles:
+      - dev
+      - production
 
   ## ##     ##  #######  ##    ## #### ########  #######  ########  #### ##    ##  ######
   ## ###   ### ##     ## ###   ##  ##     ##    ##     ## ##     ##  ##  ###   ## ##    ##
@@ -480,6 +522,8 @@ services:
       - node-exporter
     networks: [default]
     restart: unless-stopped
+    profiles:
+      - monitoring
 
   node-exporter:
     image: prom/node-exporter:latest
@@ -496,6 +540,8 @@ services:
       - "9100:9100"
     restart: unless-stopped
     networks: [default]
+    profiles:
+      - monitoring
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -511,6 +557,8 @@ services:
       - "8080:8080"
     restart: unless-stopped
     networks: [default]
+    profiles:
+      - monitoring
 
   loki:
     image: grafana/loki:3.4.2
@@ -525,6 +573,8 @@ services:
       - TZ=UTC
     networks: [default]
     restart: unless-stopped
+    profiles:
+      - monitoring
 
   promtail:
     image: grafana/promtail:3.4.2
@@ -540,6 +590,8 @@ services:
       - loki
     networks: [default]
     restart: unless-stopped
+    profiles:
+      - monitoring
 
   grafana:
     image: grafana/grafana:latest
@@ -566,6 +618,8 @@ services:
       - loki
     networks: [default]
     restart: unless-stopped
+    profiles:
+      - monitoring
 
 ######## ##    ## ########      ######  ######## ########  ##     ## ####  ######  ########  ######
 ##       ###   ## ##     ##    ##    ## ##       ##     ## ##     ##  ##  ##    ## ##       ##    ##
