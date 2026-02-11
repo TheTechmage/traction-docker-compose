@@ -80,8 +80,8 @@ services:
   traction-agent:
     image: ghcr.io/digicred-holdings/traction-agent-v1.0.1:latest
     build:
-      context: traction/services/aca-py
-      dockerfile: Dockerfile.acapy
+      context: traction/plugins
+      dockerfile: docker/Dockerfile
     depends_on:
       traction-db:
         condition: service_healthy
@@ -227,51 +227,27 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_TTL: ${REDIS_TTL:-3600}
+      # SERVER_OIDC_JWKS: https://login.frostyfrog.net/auth/jwks.json
+      # SERVER_OIDC_REALM: frostyfrog
+      # SERVER_OIDC_ROLE: Staff
+      # FRONTEND_INNKEEPER_SHOW_ADMIN: false
+      # FRONTEND_INNKEEPER_SHOW_RESERVATION_PASSWORD: false
+      # OIDC Configuration for Google OAuth
+      # SERVER_OIDC_TOKEN_URI: https://oauth2.googleapis.com/token
+      # SERVER_OIDC_REDIRECT_URI: https://digicred.z.wolkins.net:3020/api/oidc/callback
+      # FRONTEND_INNKEEPER_OIDC_AUTHORITY: https://login.frostyfrog.net/
+      # FRONTEND_INNKEEPER_OIDC_CLIENT: Traction
     ports:
       - "${TENANT_UI_PORT}:8080"
-    extra_hosts: ["host.docker.internal:host-gateway"]
-    networks: [default]
-    profiles:
-      - dev
-      - production
-
-  tenant-queue-processor:
-    image: ghcr.io/digicred-holdings/traction-tenant-ui-v1.0.1:latest
-    build:
-      context: traction/services/tenant-ui
-      dockerfile: Dockerfile
-    depends_on:
-      tenant-ui:
-        condition: service_started
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-    environment:
-      SERVER_TRACTION_URL: ${SERVER_TRACTION_URL}
-      SERVER_LOKI_URL: ${SERVER_LOKI_URL}
-      FRONTEND_TENANT_PROXY_URL: ${FRONTEND_TENANT_PROXY_URL}
-      FRONTEND_LOG_STREAM_URL: ${FRONTEND_LOG_STREAM_URL}
-      IMAGE_BUILDTIME: ${IMAGE_BUILDTIME}
-      IMAGE_TAG: ${IMAGE_TAG}
-      IMAGE_VERSION: ${IMAGE_VERSION}
-      UX_APP_TITLE: ${UX_APP_TITLE}
-      UX_APP_INNKEEPER_TITLE: ${UX_APP_INNKEEPER_TITLE}
-      UX_SIDEBAR_TITLE: ${UX_SIDEBAR_TITLE}
-      UX_COPYRIGHT: ${UX_COPYRIGHT}
-      UX_OWNER: ${UX_OWNER}
-      FRONTEND_QUICK_CONNECT_ENDORSER_NAME: ${FRONTEND_QUICK_CONNECT_ENDORSER_NAME}
-      SERVER_SMTP_SERVER: maildev
-      SERVER_SMTP_PORT: 1025
-      POSTGRESQL_HOST: ${POSTGRESQL_HOST}
-      POSTGRESQL_PORT: ${POSTGRESQL_PORT}
-      POSTGRESQL_DB: askar-wallet
-      POSTGRESQL_USER: ${POSTGRESQL_USER}
-      POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD}
-      WEBHOOK_API_KEY: ${WEBHOOK_API_KEY}
-      REDIS_HOST: redis
-      REDIS_PORT: ${REDIS_PORT:-6379}
-      REDIS_TTL: ${REDIS_TTL:-3600}
-    command: ["node", "dist/src/queue-processor.js"]
+    healthcheck:
+      # --no-verbose: logs errors without flooding logs
+      # --tries=1: prevents indefinite retrying
+      # --spider: checks for the page existence without downloading it
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [default]
     profiles:
@@ -307,7 +283,7 @@ services:
   ## ######## ##    ## ########   #######  ##     ##  ######  ######## ##     ##  ######
 
   endorser-agent:
-    image: ghcr.io/openwallet-foundation/acapy-agent:py3.12-1.2.2
+    image: ghcr.io/openwallet-foundation/acapy-agent:py3.13-1.5.0rc0
     depends_on:
       endorser-db:
         condition: service_healthy
@@ -352,7 +328,7 @@ services:
       - production
 
   endorser-agent-1:
-    image: ghcr.io/openwallet-foundation/acapy-agent:py3.12-1.2.2
+    image: ghcr.io/openwallet-foundation/acapy-agent:py3.13-1.5.0rc0
     depends_on:
       endorser-db:
         condition: service_healthy
